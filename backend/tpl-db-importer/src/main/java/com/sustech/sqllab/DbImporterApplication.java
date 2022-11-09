@@ -1,8 +1,9 @@
-package com.sustech.sqllab.importer;
+package com.sustech.sqllab;
 
-import com.sustech.sqllab.importer.dao.*;
-import com.sustech.sqllab.importer.po.Fingerprint;
-import com.sustech.sqllab.importer.po.Version;
+import com.sustech.sqllab.dao.FingerprintDao;
+import com.sustech.sqllab.dao.VersionDao;
+import com.sustech.sqllab.po.Fingerprint;
+import com.sustech.sqllab.po.Version;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -18,8 +19,8 @@ import java.nio.file.Path;
 import java.util.HashSet;
 
 @SpringBootApplication
-@MapperScan("com.sustech.sqllab.importer.dao")
-public class DbImporterApplication implements ApplicationRunner {
+@MapperScan("com.sustech.sqllab.dao")
+public class DbImporterApplication /*implements ApplicationRunner */{
 
 	public static void main(String[] args) {
 		SpringApplication.run(DbImporterApplication.class, args);
@@ -31,7 +32,7 @@ public class DbImporterApplication implements ApplicationRunner {
 	private VersionDao versionDao;
 	@Resource
 	private FingerprintDao fingerprintDao;
-	@Override
+//	@Override
 	public void run(ApplicationArguments args) throws IOException {
 		//noinspection ConstantConditions
 		for (File versionFile : new File(rootPath).listFiles()) {
@@ -45,7 +46,6 @@ public class DbImporterApplication implements ApplicationRunner {
 									.build();
 			versionDao.insert(version);
 			for (String hash : new HashSet<>(Files.readAllLines(Path.of(versionFile.getAbsolutePath())))) {
-
 				fingerprintDao.insert(new Fingerprint(hash,version.getId()));
 			}
 		}

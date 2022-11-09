@@ -1,7 +1,7 @@
-package com.sustech.sqllab.importer.dao;
+package com.sustech.sqllab.dao;
 
 import com.github.yulichang.base.MPJBaseMapper;
-import com.sustech.sqllab.importer.po.Version;
+import com.sustech.sqllab.po.Version;
 
 public interface VersionDao extends MPJBaseMapper<Version> {
 }

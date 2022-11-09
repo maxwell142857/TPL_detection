@@ -4,9 +4,9 @@ spring:
     username: quanquan
     password: wlqyanyalun008++
 
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 root-path: backend/tpl-db-importer/src/main/resources/hash
 

@@ -1,4 +1,4 @@
-package com.sustech.sqllab.importer.po;
+package com.sustech.sqllab.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -11,8 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Group {
-	@TableId(type=IdType.AUTO)
+public class Permission {
+	@TableId(type= IdType.AUTO)
 	private Integer id;
 	private String name;
+	private Integer versionAdded;
+	private String description;
+	private Integer versionDeprecated;
 }

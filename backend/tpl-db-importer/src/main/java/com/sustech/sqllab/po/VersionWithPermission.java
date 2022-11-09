@@ -1,4 +1,4 @@
-package com.sustech.sqllab.importer.po;
+package com.sustech.sqllab.po;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

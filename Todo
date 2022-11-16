@@ -1,0 +1,6 @@
+数据库fingerprint表顶点数列
+version的依赖关系也要存储
+一级依赖可能会撞不到?
+
+10个APP的version检测
+Recall率检测

@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Fingerprint {
 	private String id;
-	private Integer versionId;
+	private Integer nodeCount;
 }

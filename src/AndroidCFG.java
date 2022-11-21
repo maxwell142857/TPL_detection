@@ -9,7 +9,7 @@ import soot.options.Options;
 public class AndroidCFG {
     private static boolean SOOT_INITIALIZED=false;
     private final static String androidJAR="./lib/android30.jar";
-    private final static String appApk="./1.apk";
+    private final static String appApk= "1.apk";
     private static final String altClassPathOptionName = "alt-class-path";
     private static final String graphTypeOptionName = "graph-type";
 //    private static final String defaultGraph = "BriefUnitGraph";

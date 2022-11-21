@@ -78,7 +78,8 @@ public class Serialization {
                     }
                     content.append(";");
                 }
-                BufferedWriter bw = new BufferedWriter(new FileWriter("./result.txt",true));
+//                BufferedWriter bw = new BufferedWriter(new FileWriter("./result.txt",true));
+                BufferedWriter bw = new BufferedWriter(new FileWriter(args[0],true));
                 bw.write(SHA256(content.toString()));
 //                bw.write(content.toString());
                 bw.newLine();

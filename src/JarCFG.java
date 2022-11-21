@@ -1,4 +1,6 @@
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import soot.Body;
@@ -42,7 +44,7 @@ public class JarCFG extends BodyTransformer {
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         JarCFG viewer = new JarCFG();
         Transform printTransform = new Transform("jtp.printcfg", viewer);
         printTransform.setDeclaredOptions("enabled " + altClassPathOptionName + ' ' + graphTypeOptionName + ' '
@@ -51,15 +53,29 @@ public class JarCFG extends BodyTransformer {
                 + defaultGraph + ' ' + irOptionName + ':' + defaultIR + ' ' + multipageOptionName + ":false " + ' '
                 + briefLabelOptionName + ":false ");
         PackManager.v().getPack("jtp").add(printTransform);
+
+        File[] files = new File("./target").listFiles();
         ArrayList<String> soot_args = new ArrayList<>();
+//        String s = "animation-1.2.1";
+//        File file = new File("./target/" + s);
+        assert files != null;
         soot_args.add("-cp");
-        soot_args.add(".;D:/Java/jdk1.8.0_341/jre/lib;./lib/android30.jar");
-        soot_args.add("-process-dir");
-        soot_args.add("target");
+        soot_args.add(".;D:/soft/Java/jdk1.8.0_333/jre/lib;./lib/android30.jar;");
         soot_args.add("-allow-phantom-refs");
-        String[] soot_args_ = new String[soot_args.size()];
-        soot_args.toArray(soot_args_);
-        soot.Main.main((soot_args_));
+        soot_args.add("-process-dir");
+        for (File file : files) {
+            // 文件夹
+            if (!file.isFile()) {
+                soot_args.add("./target/" + file.getName());
+                String[] soot_args_ = new String[soot_args.size()];
+                soot_args.toArray(soot_args_);
+                soot.Main.main((soot_args_));
+                Serialization.main(new String[]{file.getName() + ".txt"});
+                Main.deleteFile(new File("sootOutput"));
+                soot_args.remove(soot_args.size() - 1);
+            }
+        }
+
 
     }
 
@@ -77,12 +93,12 @@ public class JarCFG extends BodyTransformer {
 
             AltClassLoader.v().setAltClassPath(PhaseOptions.getString(options, altClassPathOptionName));
             AltClassLoader.v().setAltClasses(
-                    new String[] { "soot.toolkits.graph.ArrayRefBlockGraph", "soot.toolkits.graph.Block",
+                    new String[]{"soot.toolkits.graph.ArrayRefBlockGraph", "soot.toolkits.graph.Block",
                             "soot.toolkits.graph.Block$AllMapTo", "soot.toolkits.graph.BlockGraph",
                             "soot.toolkits.graph.BriefBlockGraph", "soot.toolkits.graph.BriefUnitGraph",
                             "soot.toolkits.graph.CompleteBlockGraph", "soot.toolkits.graph.CompleteUnitGraph",
                             "soot.toolkits.graph.TrapUnitGraph", "soot.toolkits.graph.UnitGraph",
-                            "soot.toolkits.graph.ZonedBlockGraph", });
+                            "soot.toolkits.graph.ZonedBlockGraph",});
         }
     }
 
@@ -95,7 +111,7 @@ public class JarCFG extends BodyTransformer {
         if (filename.length() > 0) {
             filename = filename + java.io.File.separator;
         }
-        filename = filename+ methodname.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
+        filename = filename + methodname.replace(java.io.File.separatorChar, '.') + DotGraph.DOT_EXTENSION;
 
 //        G.v().out.println("Generate dot file in " + filename);
         canvas.plot(filename);

@@ -55,14 +55,30 @@ public class ZipUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        String path = "./target";		//要遍历的路径
+        String path = "./target";        //要遍历的路径
 //        String path = "./target";		//要遍历的路径
-        File file = new File(path);		//获取其file对象
-        File[] fs = file.listFiles();	//遍历path下的文件和目录，放在File数组中
+        File file = new File(path);        //获取其file对象
+        File[] fs = file.listFiles();    //遍历path下的文件和目录，放在File数组中
         // fixme: aar should deal twice
-        for(File f:fs) {                    //遍历File[]数组
-            String name = f.toString();
-            unzip(name, path);
+        for (File f : fs) {                    //遍历File[]数组
+            String name = f.getName();
+            if (!name.contains(".")) {
+                continue;
+            }
+            String suffixName = name.substring(name.lastIndexOf('.'));
+            if (!suffixName.equals(".jar") && !suffixName.equals(".aar")) {
+                continue;
+            }
+            if (suffixName.equals(".jar")) {
+                String dstPath = path + "/" + name.substring(0, name.lastIndexOf('.'));
+                mkdir(new File(dstPath));
+                unzip(f.toString(), dstPath);
+            } else {
+                String dstPath = path + "/" + name.substring(0, name.lastIndexOf('.'));
+                mkdir(new File(dstPath));
+                unzip(f.toString(), dstPath);
+                unzip(dstPath + "/classes.jar", dstPath);
+            }
         }
     }
 }

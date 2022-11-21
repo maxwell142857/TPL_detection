@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:mysql://43.138.189.131:3306/maven?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: quanquan
+    password: 123456
+
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+root-path: backend/tpl-db-importer/src/main/resources/hash
+
+#debug: true

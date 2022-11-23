@@ -8,6 +8,6 @@ spring:
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-root-path: backend/tpl-db-importer/src/main/resources/hash
+root-path: tpl-db-importer/src/main/resources/root
 
 #debug: true

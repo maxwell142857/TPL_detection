@@ -1,12 +1,8 @@
 package com.sustech.sqllab;
 
-import com.sustech.sqllab.dao.ArtifactDao;
-import com.sustech.sqllab.dao.FingerprintDao;
-import com.sustech.sqllab.dao.GroupDao;
-import com.sustech.sqllab.dao.VersionDao;
-import com.sustech.sqllab.po.Artifact;
-import com.sustech.sqllab.po.Group;
-import com.sustech.sqllab.po.Version;
+import com.sustech.sqllab.dao.*;
+import com.sustech.sqllab.dao.mapper.CustomBaseMapper;
+import com.sustech.sqllab.po.*;
 import lombok.SneakyThrows;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,14 +10,17 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashSet;
 
 @SpringBootApplication
-@MapperScan("com.sustech.sqllab.dao")
+//如果不指定markerInterface，那么CustomBaseMapper也会被扫描成DAO
+@MapperScan(value = "com.sustech.sqllab.dao", markerInterface = CustomBaseMapper.class)
 public class DbImporterApplication implements ApplicationRunner {
 
 	public static void main(String[] args) {
@@ -38,6 +37,8 @@ public class DbImporterApplication implements ApplicationRunner {
 	private GroupDao groupDao;
 	@Resource
 	private FingerprintDao fingerprintDao;
+	@Resource
+	private VersionWithFingerprintDao versionWithFingerprintDao;
 
 	@SuppressWarnings("ConstantConditions")
 	@SneakyThrows(IOException.class)
@@ -55,9 +56,22 @@ public class DbImporterApplication implements ApplicationRunner {
 					String versionName = versionFile.getName();
 					Version version =new Version()
 										.setArtifactId(artifact.getId())
-										.setName(versionName);
+										.setName(versionName.replace(".txt",""));
 					versionDao.insert(version);
-					Files.readAllLines(versionFile.toPath());
+					for (String cfg : new HashSet<>(Files.readAllLines(versionFile.toPath()))) {
+						String[] split = cfg.split(" ");
+						String hash = split[0];
+						int node = Integer.parseInt(split[1]);
+						try {
+							fingerprintDao.insert(new Fingerprint()
+													 .setId(hash)
+													 .setNodeCount(node));
+						}catch(DuplicateKeyException ignored){}
+						versionWithFingerprintDao.insert(new VersionWithFingerprint()
+															.setVersionId(version.getId())
+															.setFingerprintId(hash));
+					}
+					System.out.println(versionName);
 				}
 			}
 		}

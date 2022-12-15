@@ -10,13 +10,15 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.dao.DuplicateKeyException;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashSet;
+import java.util.*;
+
+import static java.lang.Integer.parseInt;
+import static java.util.stream.Collectors.*;
 
 @SpringBootApplication
 //如果不指定markerInterface，那么CustomBaseMapper也会被扫描成DAO
@@ -44,6 +46,7 @@ public class DbImporterApplication implements ApplicationRunner {
 	@SneakyThrows(IOException.class)
 	@Override
 	public void run(ApplicationArguments args){
+		//Todo:仓库未更新最新version，甚至可能导致检测不出来artifact
 		for (File groupDir : new File(rootPath).listFiles()) {
 			Group group = new Group(null, groupDir.getName());
 			groupDao.insert(group);
@@ -58,19 +61,38 @@ public class DbImporterApplication implements ApplicationRunner {
 										.setArtifactId(artifact.getId())
 										.setName(versionName.replace(".txt",""));
 					versionDao.insert(version);
-					for (String cfg : new HashSet<>(Files.readAllLines(versionFile.toPath()))) {
-						String[] split = cfg.split(" ");
-						String hash = split[0];
-						int node = Integer.parseInt(split[1]);
-						try {
-							fingerprintDao.insert(new Fingerprint()
-													 .setId(hash)
-													 .setNodeCount(node));
-						}catch(DuplicateKeyException ignored){}
-						versionWithFingerprintDao.insert(new VersionWithFingerprint()
-															.setVersionId(version.getId())
-															.setFingerprintId(hash));
+					//cfg->count
+					Map<String, Integer> cfgs =Files.readAllLines(versionFile.toPath())
+													.stream()
+													.collect(toMap(cfg->cfg, cfg->1, Integer::sum));
+
+					//1. Batch insert the none existed fingerprints
+					Set<Fingerprint> insertFingerPrints =cfgs.keySet()
+														.stream()
+														.map(cfg ->{String[] split = cfg.split(" ");
+																	return new Fingerprint()
+																			  .setId(split[0])
+																			  .setNodeCount(parseInt(split[1]));
+														}).collect(toSet());
+					List<String> hashes = insertFingerPrints.stream().map(Fingerprint::getId).toList();
+					Set<Fingerprint> existFingerPrints = new HashSet<>(fingerprintDao.selectBatchIds(hashes));
+					insertFingerPrints.removeAll(existFingerPrints);
+					if(!insertFingerPrints.isEmpty()) {
+						fingerprintDao.insertBatchSomeColumn(new ArrayList<>(insertFingerPrints));
 					}
+
+					//2. Batch insert the VersionWithFingerprint
+					List<VersionWithFingerprint> versionWithFingerprints =
+							cfgs.entrySet()
+								.stream()
+								.map(e->{
+									String[] split = e.getKey().split(" ");
+									return new VersionWithFingerprint()
+											  .setVersionId(version.getId())
+											  .setFingerprintId(split[0])
+											  .setCount(e.getValue());
+								}).toList();
+					versionWithFingerprintDao.insertBatchSomeColumn(versionWithFingerprints);
 					System.out.println(versionName);
 				}
 			}

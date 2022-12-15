@@ -1,6 +1,7 @@
 package com.sustech.sqllab.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,6 +12,7 @@ public class Artifact {
 	@TableId(type= IdType.AUTO)
 	private Integer id;
 	private String name;
+	@TableField("`usage`")
 	private Integer usage;
 	private String packageName;
 	private String description;

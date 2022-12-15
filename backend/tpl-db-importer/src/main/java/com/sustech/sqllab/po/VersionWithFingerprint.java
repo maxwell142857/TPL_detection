@@ -8,4 +8,5 @@ import lombok.experimental.Accessors;
 public class VersionWithFingerprint {
 	private Integer versionId;
 	private String fingerprintId;
+	private Integer count;
 }

@@ -7,14 +7,18 @@ import com.sustech.sqllab.dao.VersionWithFingerprintDao;
 import com.sustech.sqllab.po.Artifact;
 import com.sustech.sqllab.po.Version;
 import com.sustech.sqllab.po.VersionWithFingerprint;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.*;
@@ -76,5 +80,36 @@ public class Analyzer {
 			}
 		}
 		System.out.println(count);
+	}
+
+	@Test
+	@SuppressWarnings("DataFlowIssue")
+	@SneakyThrows(IOException.class)
+	void compareMethodName(){
+//		Set<String> tplMethods = Arrays.stream(getFile("classpath:root").listFiles())
+//										.flatMap(group -> Arrays.stream(group.listFiles()))
+//										.flatMap(artifact -> Arrays.stream(artifact.listFiles()))
+//										.flatMap(version -> {
+//											try {
+//												return Files.readAllLines(version.toPath()).stream();
+//											} catch (IOException ignored) {
+//												return null;
+//											}
+//										})
+//										.collect(toSet());
+		Set<String> methods =  new HashSet<>(Files.readAllLines(getFile("classpath:methodName.txt").toPath()));
+//		methods.retainAll(tplMethods);
+		for (File group : getFile("classpath:root").listFiles()) {
+			for (File artifact : group.listFiles()) {
+				for (File version : artifact.listFiles()) {
+					for (String method : Files.readAllLines(version.toPath())) {
+						if(methods.contains(method)){
+							System.out.printf("[%s][%s][%s]\n",group.getName(),artifact.getName(),version.getName());
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 }

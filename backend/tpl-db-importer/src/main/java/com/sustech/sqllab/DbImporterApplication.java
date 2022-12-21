@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.*;
 @SpringBootApplication
 //如果不指定markerInterface，那么CustomBaseMapper也会被扫描成DAO
 @MapperScan(value = "com.sustech.sqllab.dao", markerInterface = CustomBaseMapper.class)
-public class DbImporterApplication implements ApplicationRunner {
+public class DbImporterApplication /*implements ApplicationRunner*/ {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DbImporterApplication.class, args);
@@ -44,7 +44,7 @@ public class DbImporterApplication implements ApplicationRunner {
 
 	@SuppressWarnings("ConstantConditions")
 	@SneakyThrows(IOException.class)
-	@Override
+//	@Override
 	public void run(ApplicationArguments args){
 		//Todo:仓库未更新最新version，甚至可能导致检测不出来artifact
 		for (File groupDir : new File(rootPath).listFiles()) {

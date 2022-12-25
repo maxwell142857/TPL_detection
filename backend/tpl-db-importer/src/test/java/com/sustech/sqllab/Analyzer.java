@@ -65,6 +65,24 @@ public class Analyzer {
 	}
 
 	@Test
+	@SuppressWarnings("DataFlowIssue")
+	void matchWithoutDb() throws IOException{
+		for (File group : getFile("classpath:root").listFiles()) {
+			for (File artifact : group.listFiles()) {
+				version:for (File version : artifact.listFiles()) {
+					for (String cfg : Files.readAllLines(version.toPath())) {
+						if(hashes.contains(cfg.split(" ")[0])){
+							System.out.printf("[%s][%s][%s] matched\n",group.getName(),artifact.getName(),version.getName());
+							continue version;
+						}
+					}
+					System.out.printf("[%s][%s][%s] not matched\n",group.getName(),artifact.getName(),version.getName());
+				}
+			}
+		}
+	}
+
+	@Test
 	void testOneVersion() throws IOException{
 		Set<String> versionHashes =  new HashSet<>(Files.readAllLines(getFile("classpath:root/androidx.activity/activity-compose/1.6.0.txt").toPath()))
 										.stream()

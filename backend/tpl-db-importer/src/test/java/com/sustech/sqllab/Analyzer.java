@@ -14,11 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.*;
@@ -111,5 +109,11 @@ public class Analyzer {
 				}
 			}
 		}
+	}
+
+	@Test
+	@SneakyThrows(IOException.class)
+	void lineNum(){
+		System.out.println(Files.readAllLines(getFile("classpath:methodName.txt").toPath()).size());
 	}
 }

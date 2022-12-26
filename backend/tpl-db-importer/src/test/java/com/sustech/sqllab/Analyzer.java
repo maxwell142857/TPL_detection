@@ -36,12 +36,12 @@ public class Analyzer {
 
 	@BeforeAll
 	static void loadHashes() throws IOException {
-		hashes = new HashSet<>(Files.readAllLines(getFile("classpath:result.txt").toPath()))
-									.stream()
-									.map(cfg -> cfg.split(" "))
-									.filter(cfg -> !cfg[1].equals("1"))
-									.map(cfg->cfg[0])
-									.toList();
+		hashes = new HashSet<>(Files.readAllLines(getFile("classpath:apk.txt").toPath()))
+					.stream()
+					.map(cfg -> cfg.split(" "))
+//					.filter(cfg -> !cfg[1].equals("1"))
+					.map(cfg->cfg[0])
+					.toList();
 	}
 
 	@Test
@@ -61,7 +61,13 @@ public class Analyzer {
 			Comparator<Version> comparator = comparingInt(ver->matchedVersionIds.get(ver.getId()));
 			vers.sort(comparator.reversed());
 		});
-		System.out.println();
+
+		for (Artifact artifact : groupedVersions.keySet()) {
+			System.out.println("\n["+artifact.getName()+"]");
+			for (Version version : groupedVersions.get(artifact)) {
+				System.out.println(version.getName());
+			}
+		}
 	}
 
 	@Test

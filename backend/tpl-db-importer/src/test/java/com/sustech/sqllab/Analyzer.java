@@ -2,6 +2,7 @@ package com.sustech.sqllab;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sustech.sqllab.dao.ArtifactDao;
+import com.sustech.sqllab.dao.GroupDao;
 import com.sustech.sqllab.dao.VersionDao;
 import com.sustech.sqllab.dao.VersionWithFingerprintDao;
 import com.sustech.sqllab.po.Artifact;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static com.sustech.sqllab.util.FileDownloader.downloadFile;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.*;
 
@@ -33,6 +35,8 @@ public class Analyzer {
 	private VersionDao versionDao;
 	@Resource
 	private ArtifactDao artifactDao;
+	@Resource
+	private GroupDao groupDao;
 
 	@Test
 	void analyzeOneApk(){
@@ -47,6 +51,56 @@ public class Analyzer {
 			@Cleanup FileWriter writer=new FileWriter(apkPath+"/report.txt");
 			writer.write(analyzeHashes(apkPath+"/result.txt"));
 			System.out.println(apk.getName()+" Done");
+		}
+	}
+
+	@SuppressWarnings("DataFlowIssue")
+	@Test
+	void calculateFScore() throws IOException {
+		File[] apks = new File("src/main/resources/apk").listFiles();
+//      //Auto parse TPL from build.gradle(.kts) URL
+//		for (File apk : apks) {
+//			//1.Download build.gradle
+//			String url =Arrays.stream(apk.listFiles())
+//							  .map(File::getName)
+//							  .filter(name -> name.equals("link.txt"))
+//							  .toList()
+//							  .get(0);
+//			String fileName = url.substring(url.lastIndexOf("/") + 1);
+//			String gradleFile = apk.getAbsolutePath() + "/" + fileName;
+//			downloadFile(url, gradleFile);
+//			System.out.println("Download "+fileName+" Done");
+//			//2.Parse build.gradle
+//			//https://docs.gradle.org/current/userguide/declaring_dependencies.html
+//			Files.readAllLines(Path.of(gradleFile))
+//					.stream()
+//					.filter(line->line.contains("mplementation") &&
+//								!line.contains(""))
+//		}
+		for (File apk : apks) {
+			String apkPath = apk.getAbsolutePath();
+			List<String> trueArtifacts=Files.readAllLines(Path.of(apkPath + "/tpl.txt"))
+											.stream()
+											.map(line->line.substring(0,line.lastIndexOf(":")))
+											.toList();
+			List<String> reportArtifacts = Files.readAllLines(Path.of(apkPath + "/report.txt"))
+												.stream()
+												.filter(line -> line.startsWith("["))
+												.map(line ->line.replace("[", "")
+																.replace("]", ""))
+												.toList();
+			HashSet<String> matchedArtifacts = new HashSet<>(reportArtifacts);
+			matchedArtifacts.retainAll(trueArtifacts);
+			int tp = matchedArtifacts.size();
+			String apkName = Arrays.stream(apk.listFiles())
+								   .map(File::getName)
+								   .filter(name -> name.endsWith(".apk"))
+								   .toList().get(0);
+			System.out.println("\n"+apkName);
+			//1.Calculate Precision=TP/TP+FP
+			System.out.printf("Precision: %.2f\n",(float)tp/reportArtifacts.size());
+			//2.Calculate Recall=TP/TP+FN
+			System.out.printf("Recall: %.2f\n",(float)tp/trueArtifacts.size());
 		}
 	}
 
@@ -94,9 +148,10 @@ public class Analyzer {
 
 		StringBuilder res = new StringBuilder();
 		for (Artifact artifact : groupedVersions.keySet()) {
-			res.append("["+artifact.getName()+"]\n");
+			String groupName = groupDao.selectById(artifact.getGroupId()).getName();
+			res.append("["+groupName+":"+artifact.getName()+"]\n");
 			for (Version version : groupedVersions.get(artifact)) {
-				res.append(version.getName()+"\n");
+				res.append(matchedVersionIds.get(version.getId())+" "+version.getName()+"\n");
 			}
 			res.append('\n');
 		}

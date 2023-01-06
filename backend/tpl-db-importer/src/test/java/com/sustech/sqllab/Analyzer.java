@@ -77,11 +77,13 @@ public class Analyzer {
 //					.filter(line->line.contains("mplementation") &&
 //								!line.contains(""))
 //		}
+		Set<String> exceptTpls=new HashSet<>(Files.readAllLines(Path.of("src/main/resources/except.txt")));
 		for (File apk : apks) {
 			String apkPath = apk.getAbsolutePath();
 			List<String> trueArtifacts=Files.readAllLines(Path.of(apkPath + "/tpl.txt"))
 											.stream()
 											.map(line->line.substring(0,line.lastIndexOf(":")))
+											.filter(tpl->!exceptTpls.contains(tpl))
 											.toList();
 			List<String> reportArtifacts = Files.readAllLines(Path.of(apkPath + "/report.txt"))
 												.stream()
